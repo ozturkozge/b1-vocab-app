@@ -35,7 +35,7 @@ const BUILT_IN_WORDS = [{"de": "wütend", "en": "angry / furious", "theme": "Emo
 const KEY_WORDS='b1_full_words_v1', KEY_PROGRESS='b1_full_progress_v1', KEY_STREAK='b1_full_streak_v1';
 let words = JSON.parse(localStorage.getItem(KEY_WORDS) || 'null') || BUILT_IN_WORDS;
 let progress = JSON.parse(localStorage.getItem(KEY_PROGRESS) || '{}');
-let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily';
+let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily', quizDirection='de-en';
 function save(){localStorage.setItem(KEY_WORDS,JSON.stringify(words));localStorage.setItem(KEY_PROGRESS,JSON.stringify(progress));}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function p(w){if(!progress[w.de])progress[w.de]={known:false,fav:false,wrong:0,seen:0};return progress[w.de];}
@@ -45,6 +45,33 @@ function todayWords(){const startDate=new Date('2026-05-25T00:00:00');const day=
 function themes(){return ['All',...Array.from(new Set(words.map(w=>w.theme))).sort()]}
 function filtered(){return words.filter(w=>(activeTheme==='All'||w.theme===activeTheme)&&(w.de+' '+w.en+' '+w.theme+' '+w.example).toLowerCase().includes(search.toLowerCase()))}
 function normalize(s){return(s||'').toLowerCase().trim().replace(/[.,!?;:()]/g,'')}
+function normalizeGermanInput(s) {
+  return (s || '')
+    .toLowerCase()
+    .trim()
+    .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+    .replace(/[.,!?;:()]/g,'')
+    .replace(/\s+/g,' ');
+}
+function getGermanAnswerVariants(de) {
+  const base = (de || '').trim();
+  const withoutArticle = base
+    .replace(/^(der|die|das|den|dem|ein|eine|einen|einem)\s+/i, '')
+    .trim();
+  const parts = [base, withoutArticle];
+  return [...new Set(parts.filter(Boolean).map(normalizeGermanInput))];
+}
+function isGermanAnswerCorrect(user, de) {
+  const u = normalizeGermanInput(user);
+  if (!u || u.length < 2) return false;
+  return getGermanAnswerVariants(de).some(v => u === v || (v.length > 4 && u.includes(v)) || (u.length > 4 && v.includes(u)));
+}
+function isEnglishAnswerCorrect(user, en) {
+  const u = normalize(user);
+  if (!u || u.length < 2 || en === 'Add/check meaning') return false;
+  return en.split('/').some(x => normalize(x).includes(u) || u.includes(normalize(x)));
+}
+
 function render(){['home','daily','cards','quiz','add'].forEach(id=>document.getElementById(id).classList.toggle('hidden',id!==currentPage));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.page===currentPage));renderHome();renderDaily();renderCards();renderQuiz();renderAdd();save();}
 function renderHome(){const known=words.filter(w=>p(w).known).length,fav=words.filter(w=>p(w).fav).length,wrong=words.filter(w=>p(w).wrong>0).length;document.getElementById('home').innerHTML=`
 <div class="card"><h2>Welcome back</h2><p class="small">This version includes ${words.length} entries. Some Goethe imports are first-pass and can be edited as you study.</p>
@@ -54,8 +81,49 @@ function renderDaily(){const tw=todayWords();document.getElementById('daily').in
 function renderCards(){const fs=filtered();const w=fs[cardIndex%Math.max(1,fs.length)]||words[0];document.getElementById('cards').innerHTML=`
 <div class="card grid"><input placeholder="Search German or English..." value="${esc(search)}" oninput="search=this.value;cardIndex=0;render()"><select onchange="activeTheme=this.value;cardIndex=0;render()">${themes().map(t=>`<option ${t===activeTheme?'selected':''}>${esc(t)}</option>`).join('')}</select><p class="small">${fs.length} matching words</p></div>
 <div class="card"><span class="badge">${esc(w.theme)}</span><div class="word">${esc(w.de)}</div>${showAnswer?`<div class="meaning">${esc(w.en)}</div><p class="example">${esc(w.example)}</p><p class="small">${esc(w.note)}</p>`:`<p class="small">Try to remember the meaning, then reveal.</p>`}<div class="row"><button class="primary" onclick="showAnswer=!showAnswer;p(words.find(x=>x.de==='${esc(w.de)}')).seen++;render()">${showAnswer?'Hide':'Show answer'}</button><button onclick="cardIndex++;showAnswer=false;render()">Next</button><button class="${p(w).known?'good':''}" onclick="toggleKnown('${esc(w.de)}')">${p(w).known?'Known':'Mark known'}</button><button onclick="toggleFav('${esc(w.de)}')">${p(w).fav?'★ Favorite':'☆ Favorite'}</button><button onclick="editWord('${esc(w.de)}')">Edit meaning</button></div></div>`}
-function renderQuiz(){const wrong=words.filter(w=>p(w).wrong>0),pool=wrong.length?wrong:todayWords(),w=pool[quizIndex%pool.length];document.getElementById('quiz').innerHTML=`<div class="card"><h2>${wrong.length?'Wrong-word review':'Daily quiz'}</h2><p class="small">Type the English meaning. For entries marked “Add/check meaning”, reveal and edit them.</p></div><div class="card"><span class="badge">${esc(w.theme)}</span><div class="word">${esc(w.de)}</div><input id="answer" placeholder="English meaning..." onkeydown="if(event.key==='Enter')checkQuiz('${esc(w.de)}')"><div id="quizResult"></div><div class="row" style="margin-top:10px"><button class="primary" onclick="checkQuiz('${esc(w.de)}')">Check</button><button onclick="quizIndex++;render()">Next</button><button onclick="editWord('${esc(w.de)}')">Edit meaning</button></div></div>`}
-function checkQuiz(de){const w=words.find(x=>x.de===de),ans=normalize(document.getElementById('answer').value);const ok=w.en!=='Add/check meaning'&&w.en.split('/').some(x=>normalize(x).includes(ans)||ans.includes(normalize(x)))&&ans.length>1;if(ok){p(w).known=true;p(w).wrong=Math.max(0,p(w).wrong-1);markStudy();}else{p(w).wrong++;}save();document.getElementById('quizResult').innerHTML=`<p class="${ok?'correct':'wrong'}">${ok?'Correct ✅':'Not quite ❌'}</p><p>Answer: <b>${esc(w.en)}</b></p><p class="example">${esc(w.example)}</p>`}
+function renderQuiz(){
+const wrong=words.filter(w=>p(w).wrong>0),pool=wrong.length?wrong:todayWords(),w=pool[quizIndex%pool.length];
+const promptText = quizDirection==='en-de' ? w.en : w.de;
+const directionLabel = quizDirection==='en-de' ? 'English → German' : 'German → English';
+const placeholder = quizDirection==='en-de' ? 'Type the German word...' : 'Type the English meaning...';
+document.getElementById('quiz').innerHTML=`
+<div class="card">
+  <h2>${wrong.length?'Wrong-word review':'Daily quiz'}</h2>
+  <p class="small">Choose direction. English → German is harder and better for speaking/writing.</p>
+  <div class="row">
+    <button class="${quizDirection==='de-en'?'primary':''}" onclick="quizDirection='de-en';render()">German → English</button>
+    <button class="${quizDirection==='en-de'?'primary':''}" onclick="quizDirection='en-de';render()">English → German</button>
+  </div>
+</div>
+<div class="card">
+  <span class="badge">${esc(w.theme)}</span>
+  <p class="small">${directionLabel}</p>
+  <div class="word">${esc(promptText)}</div>
+  ${quizDirection==='en-de' && w.en==='Add/check meaning' ? '<p class="small">This word has no English meaning yet. Edit it first.</p>' : ''}
+  <input id="answer" placeholder="${placeholder}" onkeydown="if(event.key==='Enter')checkQuiz('${esc(w.de)}')">
+  <div id="quizResult"></div>
+  <div class="row" style="margin-top:10px">
+    <button class="primary" onclick="checkQuiz('${esc(w.de)}')">Check</button>
+    <button onclick="quizIndex++;render()">Next</button>
+    <button onclick="showSolution('${esc(w.de)}')">Show answer</button>
+    <button onclick="editWord('${esc(w.de)}')">Edit meaning</button>
+  </div>
+</div>`}
+function showSolution(de){
+  const w=words.find(x=>x.de===de);
+  const answer = quizDirection==='en-de' ? w.de : w.en;
+  const extra = quizDirection==='en-de' ? ('Meaning: '+w.en) : ('German: '+w.de);
+  document.getElementById('quizResult').innerHTML=`<p><b>Answer:</b> ${esc(answer)}</p><p class="small">${esc(extra)}</p><p class="example">${esc(w.example)}</p>`;
+}
+function checkQuiz(de){
+const w=words.find(x=>x.de===de),ans=document.getElementById('answer').value;
+const ok = quizDirection==='en-de' ? isGermanAnswerCorrect(ans,w.de) : isEnglishAnswerCorrect(ans,w.en);
+if(ok){p(w).known=true;p(w).wrong=Math.max(0,p(w).wrong-1);markStudy();}else{p(w).wrong++;}
+save();
+const correctAnswer = quizDirection==='en-de' ? w.de : w.en;
+const supporting = quizDirection==='en-de' ? ('Meaning: '+w.en) : ('German: '+w.de);
+document.getElementById('quizResult').innerHTML=`<p class="${ok?'correct':'wrong'}">${ok?'Correct ✅':'Not quite ❌'}</p><p>Answer: <b>${esc(correctAnswer)}</b></p><p class="small">${esc(supporting)}</p><p class="example">${esc(w.example)}</p>`;
+}
 function renderAdd(){document.getElementById('add').innerHTML=`<div class="card"><h2>Add your own word</h2><div class="grid"><input id="de" placeholder="German word / phrase"><input id="en" placeholder="English meaning"><input id="theme" placeholder="Theme" value="Custom"><textarea id="example" placeholder="Example sentence"></textarea><input id="note" placeholder="Grammar note / memory tip"><button class="primary" onclick="addWord()">Add word</button></div></div><div class="card"><h2>Backup / Reset</h2><p class="small">Export creates a JSON copy of your words and progress.</p><div class="row"><button onclick="exportData()">Export</button><button class="danger" onclick="resetBuiltIn()">Reset built-in list</button></div></div>`}
 function toggleKnown(de){const w=words.find(x=>x.de===de);p(w).known=!p(w).known;if(p(w).known)markStudy();render()}function toggleFav(de){const w=words.find(x=>x.de===de);p(w).fav=!p(w).fav;render()}
 function addWord(){const w={de:de.value.trim(),en:en.value.trim(),theme:theme.value.trim()||'Custom',example:example.value.trim(),note:note.value.trim()};if(!w.de||!w.en)return alert('Please enter German and English.');words.unshift(w);save();alert('Added!');render()}

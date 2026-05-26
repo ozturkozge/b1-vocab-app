@@ -17,3 +17,14 @@ Important:
 - You need the hosted link once for the first install.
 - After the offline cache is installed, the Home Screen version should continue opening even if the host later has issues.
 - Do not clear Chrome/Safari website data, otherwise progress/cache can be lost.
+
+
+UPDATE:
+This version adds quiz direction selection:
+- German → English
+- English → German
+
+English → German accepts:
+- capitalization differences
+- ae/oe/ue/ss for ä/ö/ü/ß
+- answers with or without articles for nouns
