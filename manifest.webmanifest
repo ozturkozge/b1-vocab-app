@@ -1,7 +1,6 @@
 {
-  "name": "B1 Goethe Vocabulary Trainer",
+  "name": "B1 Vocabulary Trainer",
   "short_name": "B1 Trainer",
-  "description": "Offline B1 German vocabulary practice app with daily words, flashcards, quiz, favorites and review.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

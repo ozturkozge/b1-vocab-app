@@ -1,5 +1,26 @@
 [
   {
+    "de": "hauen",
+    "en": "to hit / bang / slam",
+    "theme": "Actions & Informal Speech",
+    "example": "Bitte nicht auf den Tisch hauen.",
+    "note": "Informal. Related: schlagen, klopfen, abhauen."
+  },
+  {
+    "de": "die Mütze",
+    "en": "cap / beanie",
+    "theme": "Clothing & Weather",
+    "example": "Im Winter trage ich immer eine Mütze.",
+    "note": "Plural: die Mützen."
+  },
+  {
+    "de": "das Geräusch",
+    "en": "sound / noise",
+    "theme": "Senses",
+    "example": "Ich habe ein seltsames Geräusch gehört.",
+    "note": "Plural: die Geräusche. Geräusch = neutral sound; Lärm = unpleasant/loud noise."
+  },
+  {
     "de": "wütend",
     "en": "angry / furious",
     "theme": "Emotions",
@@ -4368,11 +4389,11 @@
     "note": "First-pass import. You can edit/add your own meaning in the app."
   },
   {
-    "de": "bekannt",
-    "en": "known / famous",
-    "theme": "Goethe B1 Core",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
+    "de": "bekommen",
+    "en": "to get / receive",
+    "theme": "High-frequency Verbs",
+    "example": "Ich habe eine Nachricht bekommen.",
+    "note": "Very common everyday word for get/receive."
   },
   {
     "de": "der Bekannte",
@@ -4384,13 +4405,6 @@
   {
     "de": "bekannt geben",
     "en": "Add/check meaning",
-    "theme": "Goethe B1 Verbs",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
-  },
-  {
-    "de": "bekommen",
-    "en": "to get",
     "theme": "Goethe B1 Verbs",
     "example": "Imported from the Goethe B1 word list.",
     "note": "First-pass import. You can edit/add your own meaning in the app."
@@ -6273,10 +6287,10 @@
   },
   {
     "de": "eben",
-    "en": "just / exactly",
-    "theme": "Goethe B1 Verbs",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
+    "en": "just / simply / flat / level",
+    "theme": "High-frequency Words",
+    "example": "Ich war eben beim Arzt.",
+    "note": "Very common. Can mean just now, simply, or flat/even."
   },
   {
     "de": "ebenfalls",
@@ -7049,11 +7063,11 @@
     "note": "First-pass import. You can edit/add your own meaning in the app."
   },
   {
-    "de": "Elektro-",
-    "en": "Add/check meaning",
-    "theme": "Goethe B1 Core",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
+    "de": "empfangen",
+    "en": "to receive / welcome",
+    "theme": "Communication",
+    "example": "Ich habe deine Nachricht empfangen.",
+    "note": "More formal/technical than bekommen; also to welcome guests."
   },
   {
     "de": "elektronisch",
@@ -7066,13 +7080,6 @@
     "de": "die Eltern",
     "en": "parents",
     "theme": "Family & Relationships",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
-  },
-  {
-    "de": "empfangen",
-    "en": "to receive / welcome",
-    "theme": "Goethe B1 Verbs",
     "example": "Imported from the Goethe B1 word list.",
     "note": "First-pass import. You can edit/add your own meaning in the app."
   },
@@ -14735,23 +14742,16 @@
     "note": "First-pass import. You can edit/add your own meaning in the app."
   },
   {
-    "de": "oder",
-    "en": "Add/check meaning",
-    "theme": "Goethe B1 Core",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
+    "de": "offen",
+    "en": "open / honest / transparent / frank",
+    "theme": "Personality & Communication",
+    "example": "Wir haben offen darüber gesprochen.",
+    "note": "In personality/communication: open, honest, transparent."
   },
   {
     "de": "der Ofen",
     "en": "Add/check meaning",
     "theme": "Goethe B1 Nouns",
-    "example": "Imported from the Goethe B1 word list.",
-    "note": "First-pass import. You can edit/add your own meaning in the app."
-  },
-  {
-    "de": "offen",
-    "en": "Add/check meaning",
-    "theme": "Goethe B1 Verbs",
     "example": "Imported from the Goethe B1 word list.",
     "note": "First-pass import. You can edit/add your own meaning in the app."
   },
