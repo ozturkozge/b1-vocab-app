@@ -28,3 +28,6 @@ English → German accepts:
 - capitalization differences
 - ae/oe/ue/ss for ä/ö/ü/ß
 - answers with or without articles for nouns
+
+
+BUG FIX: Quiz no longer gets stuck on the same word after a wrong answer. Wrong answers are saved for the separate Review wrong mode.

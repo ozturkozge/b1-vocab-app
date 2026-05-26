@@ -35,7 +35,7 @@ const BUILT_IN_WORDS = [{"de": "wütend", "en": "angry / furious", "theme": "Emo
 const KEY_WORDS='b1_full_words_v1', KEY_PROGRESS='b1_full_progress_v1', KEY_STREAK='b1_full_streak_v1';
 let words = JSON.parse(localStorage.getItem(KEY_WORDS) || 'null') || BUILT_IN_WORDS;
 let progress = JSON.parse(localStorage.getItem(KEY_PROGRESS) || '{}');
-let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily', quizDirection='de-en';
+let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily', quizDirection='de-en', quizReviewMode=false, quizReviewMode=false;
 function save(){localStorage.setItem(KEY_WORDS,JSON.stringify(words));localStorage.setItem(KEY_PROGRESS,JSON.stringify(progress));}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function p(w){if(!progress[w.de])progress[w.de]={known:false,fav:false,wrong:0,seen:0};return progress[w.de];}
@@ -82,17 +82,24 @@ function renderCards(){const fs=filtered();const w=fs[cardIndex%Math.max(1,fs.le
 <div class="card grid"><input placeholder="Search German or English..." value="${esc(search)}" oninput="search=this.value;cardIndex=0;render()"><select onchange="activeTheme=this.value;cardIndex=0;render()">${themes().map(t=>`<option ${t===activeTheme?'selected':''}>${esc(t)}</option>`).join('')}</select><p class="small">${fs.length} matching words</p></div>
 <div class="card"><span class="badge">${esc(w.theme)}</span><div class="word">${esc(w.de)}</div>${showAnswer?`<div class="meaning">${esc(w.en)}</div><p class="example">${esc(w.example)}</p><p class="small">${esc(w.note)}</p>`:`<p class="small">Try to remember the meaning, then reveal.</p>`}<div class="row"><button class="primary" onclick="showAnswer=!showAnswer;p(words.find(x=>x.de==='${esc(w.de)}')).seen++;render()">${showAnswer?'Hide':'Show answer'}</button><button onclick="cardIndex++;showAnswer=false;render()">Next</button><button class="${p(w).known?'good':''}" onclick="toggleKnown('${esc(w.de)}')">${p(w).known?'Known':'Mark known'}</button><button onclick="toggleFav('${esc(w.de)}')">${p(w).fav?'★ Favorite':'☆ Favorite'}</button><button onclick="editWord('${esc(w.de)}')">Edit meaning</button></div></div>`}
 function renderQuiz(){
-const wrong=words.filter(w=>p(w).wrong>0),pool=wrong.length?wrong:todayWords(),w=pool[quizIndex%pool.length];
+const wrong=words.filter(w=>p(w).wrong>0);
+let pool = quizReviewMode && wrong.length ? wrong : todayWords();
+if(!pool.length) pool = words;
+const w=pool[quizIndex%pool.length];
 const promptText = quizDirection==='en-de' ? w.en : w.de;
 const directionLabel = quizDirection==='en-de' ? 'English → German' : 'German → English';
 const placeholder = quizDirection==='en-de' ? 'Type the German word...' : 'Type the English meaning...';
 document.getElementById('quiz').innerHTML=`
 <div class="card">
-  <h2>${wrong.length?'Wrong-word review':'Daily quiz'}</h2>
-  <p class="small">Choose direction. English → German is harder and better for speaking/writing.</p>
+  <h2>${quizReviewMode?'Wrong-word review':'Daily quiz'}</h2>
+  <p class="small">Wrong answers are saved, but the normal quiz continues to the next word.</p>
   <div class="row">
     <button class="${quizDirection==='de-en'?'primary':''}" onclick="quizDirection='de-en';render()">German → English</button>
     <button class="${quizDirection==='en-de'?'primary':''}" onclick="quizDirection='en-de';render()">English → German</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="${!quizReviewMode?'primary':''}" onclick="quizReviewMode=false;quizIndex=0;render()">Daily quiz</button>
+    <button class="${quizReviewMode?'primary':''}" onclick="quizReviewMode=true;quizIndex=0;render()">Review wrong (${wrong.length})</button>
   </div>
 </div>
 <div class="card">
@@ -122,7 +129,7 @@ if(ok){p(w).known=true;p(w).wrong=Math.max(0,p(w).wrong-1);markStudy();}else{p(w
 save();
 const correctAnswer = quizDirection==='en-de' ? w.de : w.en;
 const supporting = quizDirection==='en-de' ? ('Meaning: '+w.en) : ('German: '+w.de);
-document.getElementById('quizResult').innerHTML=`<p class="${ok?'correct':'wrong'}">${ok?'Correct ✅':'Not quite ❌'}</p><p>Answer: <b>${esc(correctAnswer)}</b></p><p class="small">${esc(supporting)}</p><p class="example">${esc(w.example)}</p>`;
+document.getElementById('quizResult').innerHTML=`<p class="${ok?'correct':'wrong'}">${ok?'Correct ✅':'Not quite ❌'}</p><p>Answer: <b>${esc(correctAnswer)}</b></p><p class="small">${esc(supporting)}</p><p class="example">${esc(w.example)}</p><div class="row"><button class="primary" onclick="quizIndex++;render()">Next word</button></div>`;
 }
 function renderAdd(){document.getElementById('add').innerHTML=`<div class="card"><h2>Add your own word</h2><div class="grid"><input id="de" placeholder="German word / phrase"><input id="en" placeholder="English meaning"><input id="theme" placeholder="Theme" value="Custom"><textarea id="example" placeholder="Example sentence"></textarea><input id="note" placeholder="Grammar note / memory tip"><button class="primary" onclick="addWord()">Add word</button></div></div><div class="card"><h2>Backup / Reset</h2><p class="small">Export creates a JSON copy of your words and progress.</p><div class="row"><button onclick="exportData()">Export</button><button class="danger" onclick="resetBuiltIn()">Reset built-in list</button></div></div>`}
 function toggleKnown(de){const w=words.find(x=>x.de===de);p(w).known=!p(w).known;if(p(w).known)markStudy();render()}function toggleFav(de){const w=words.find(x=>x.de===de);p(w).fav=!p(w).fav;render()}
