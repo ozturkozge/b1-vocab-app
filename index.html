@@ -35,7 +35,7 @@ const BUILT_IN_WORDS = [{"de": "wütend", "en": "angry / furious", "theme": "Emo
 const KEY_WORDS='b1_full_words_v1', KEY_PROGRESS='b1_full_progress_v1', KEY_STREAK='b1_full_streak_v1';
 let words = JSON.parse(localStorage.getItem(KEY_WORDS) || 'null') || BUILT_IN_WORDS;
 let progress = JSON.parse(localStorage.getItem(KEY_PROGRESS) || '{}');
-let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily', quizDirection='de-en', quizReviewMode=false, quizReviewMode=false;
+let currentPage='home', cardIndex=0, quizIndex=0, showAnswer=false, activeTheme='All', search='', mode='daily', quizDirection='de-en', quizReviewMode=false;
 function save(){localStorage.setItem(KEY_WORDS,JSON.stringify(words));localStorage.setItem(KEY_PROGRESS,JSON.stringify(progress));}
 function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 function p(w){if(!progress[w.de])progress[w.de]={known:false,fav:false,wrong:0,seen:0};return progress[w.de];}

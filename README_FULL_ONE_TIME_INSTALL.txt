@@ -31,3 +31,9 @@ English → German accepts:
 
 
 BUG FIX: Quiz no longer gets stuck on the same word after a wrong answer. Wrong answers are saved for the separate Review wrong mode.
+
+
+REPAIR:
+- Fixed a JavaScript syntax error that made all pages appear empty.
+- Keeps English → German quiz mode.
+- Keeps separate Review wrong mode.

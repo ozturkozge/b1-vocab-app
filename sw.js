@@ -1,4 +1,4 @@
-const CACHE_NAME = 'b1-goethe-full-trainer-v5-quiz-fix';
+const CACHE_NAME = 'b1-goethe-full-trainer-v6-repaired';
 const APP_SHELL = [
   './',
   './index.html',
