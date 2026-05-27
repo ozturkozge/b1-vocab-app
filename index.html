@@ -46,7 +46,7 @@ const STORAGE_PROGRESS="b1_clean_progress_v1";
 const STORAGE_STREAK="b1_clean_streak_v1";
 let words=JSON.parse(localStorage.getItem(STORAGE_WORDS)||"null")||DEFAULT_WORDS;
 let progress=JSON.parse(localStorage.getItem(STORAGE_PROGRESS)||"{}");
-let page="home", cardIndex=0, quizIndex=0, showCard=false, search="", activeTheme="All", quizDirection="de-en", reviewWrong=false;
+let page="home", cardIndex=0, quizIndex=0, showCard=false, search="", activeTheme="All", quizDirection="de-en", reviewWrong=false, reviewKnown=false;
 
 function save(){localStorage.setItem(STORAGE_WORDS,JSON.stringify(words));localStorage.setItem(STORAGE_PROGRESS,JSON.stringify(progress));}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
@@ -88,9 +88,42 @@ function renderCards(){
 }
 
 function renderQuiz(){
- const wrong=words.filter(w=>prog(w).wrong>0); let pool=(reviewWrong&&wrong.length)?wrong:todayWords(); if(!pool.length) pool=words; const w=pool[quizIndex%pool.length];
- const prompt=quizDirection==="en-de"?w.en:w.de; const placeholder=quizDirection==="en-de"?"Type German word...":"Type English meaning...";
- quiz.innerHTML=`<div class="card"><h2>${reviewWrong?'Review wrong':'Daily quiz'}</h2><p class="small">Choose direction. Wrong answers are saved separately.</p><div class="row"><button class="${quizDirection==='de-en'?'primary':''}" onclick="quizDirection='de-en';render()">German → English</button><button class="${quizDirection==='en-de'?'primary':''}" onclick="quizDirection='en-de';render()">English → German</button></div><div class="row" style="margin-top:8px"><button class="${!reviewWrong?'primary':''}" onclick="reviewWrong=false;quizIndex=0;render()">Daily quiz</button><button class="${reviewWrong?'primary':''}" onclick="reviewWrong=true;quizIndex=0;render()">Review wrong (${wrong.length})</button></div></div><div class="card"><span class="badge">${esc(w.theme)}</span><div class="small">${quizDirection==='en-de'?'English → German':'German → English'}</div><div class="word">${esc(prompt)}</div>${quizDirection==='en-de'&&w.en==='Add/check meaning'?'<p class="small">No English meaning yet. Edit this word first.</p>':''}<input id="answer" placeholder="${placeholder}" onkeydown="if(event.key==='Enter')checkQuiz('${esc(w.de)}')"><div id="quizResult"></div><div class="row" style="margin-top:10px"><button class="primary" onclick="checkQuiz('${esc(w.de)}')">Check</button><button onclick="quizIndex++;render()">Next</button><button onclick="showSolution('${esc(w.de)}')">Show answer</button><button onclick="editWord('${esc(w.de)}')">Edit</button></div></div>`;
+ const wrong=words.filter(w=>prog(w).wrong>0);
+ const known=words.filter(w=>prog(w).known);
+ let pool=todayWords();
+ if(reviewWrong&&wrong.length){ pool=wrong; }
+ if(reviewKnown&&known.length){ pool=known; }
+ if(!pool.length) pool=words;
+ const w=pool[quizIndex%pool.length];
+ const prompt=quizDirection==="en-de"?w.en:w.de;
+ const placeholder=quizDirection==="en-de"?"Type German word...":"Type English meaning...";
+ quiz.innerHTML=`<div class="card">
+   <h2>${reviewKnown?'Review known':(reviewWrong?'Review wrong':'Daily quiz')}</h2>
+   <p class="small">Choose direction. Known review uses words you already marked as known.</p>
+   <div class="row">
+     <button class="${quizDirection==='de-en'?'primary':''}" onclick="quizDirection='de-en';render()">German → English</button>
+     <button class="${quizDirection==='en-de'?'primary':''}" onclick="quizDirection='en-de';render()">English → German</button>
+   </div>
+   <div class="row" style="margin-top:8px">
+     <button class="${(!reviewWrong&&!reviewKnown)?'primary':''}" onclick="reviewWrong=false;reviewKnown=false;quizIndex=0;render()">Daily quiz</button>
+     <button class="${reviewWrong?'primary':''}" onclick="reviewWrong=true;reviewKnown=false;quizIndex=0;render()">Review wrong (${wrong.length})</button>
+     <button class="${reviewKnown?'primary':''}" onclick="reviewKnown=true;reviewWrong=false;quizIndex=0;render()">Review known (${known.length})</button>
+   </div>
+ </div>
+ <div class="card">
+   <span class="badge">${esc(w.theme)}</span>
+   <div class="small">${quizDirection==='en-de'?'English → German':'German → English'}</div>
+   <div class="word">${esc(prompt)}</div>
+   ${quizDirection==='en-de'&&w.en==='Add/check meaning'?'<p class="small">No English meaning yet. Edit this word first.</p>':''}
+   <input id="answer" placeholder="${placeholder}" onkeydown="if(event.key==='Enter')checkQuiz('${esc(w.de)}')">
+   <div id="quizResult"></div>
+   <div class="row" style="margin-top:10px">
+     <button class="primary" onclick="checkQuiz('${esc(w.de)}')">Check</button>
+     <button onclick="quizIndex++;render()">Next</button>
+     <button onclick="showSolution('${esc(w.de)}')">Show answer</button>
+     <button onclick="editWord('${esc(w.de)}')">Edit</button>
+   </div>
+ </div>`;
 }
 
 function checkQuiz(de){
